@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/plugins/Suavizacao" >
+        <file>c.png</file>
+    </qresource>
+</RCC>
