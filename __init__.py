@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from .suavizacao import Suavizacao
+from .organizaGrupo import OrganizaGrupo
 
 def classFactory(iface): 
     
-    return Suavizacao(iface)
+    return OrganizaGrupo(iface)

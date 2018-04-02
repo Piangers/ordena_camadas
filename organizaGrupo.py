@@ -1,21 +1,16 @@
 # -*- coding: utf-8 -*-
 
-import math
-from qgis.core import QgsMapLayerRegistry,QgsMapLayer
-from qgis.core import QGis, QgsVectorLayer, QgsGeometry,QgsLayerTreeGroup,QgsLayerTreeLayer,QgsProject
-from PyQt4 import QtCore, QtGui
+from qgis.core import QGis,QgsLayerTreeGroup,QgsLayerTreeLayer, QgsMapLayer
 from PyQt4.QtGui import QIcon, QAction
-from PyQt4.QtCore import *
+from PyQt4.QtCore import QObject, SIGNAL
 import resources_rc
-import os.path
 from qgis.gui import QgsMessageBar
-import collections
 
-class Suavizacao:
+
+class OrganizaGrupo:
 
     def __init__(self, iface):
         
-        # Save reference to the QGIS interface
         self.iface = iface
 
     def initGui(self):
@@ -23,32 +18,25 @@ class Suavizacao:
         # cria uma ação que iniciará a configuração do plugin 
         pai = self.iface.mainWindow()
         icon_path = ':/plugins/Suavizacao/c.png'
-        
-        
         self.action = QAction (QIcon (icon_path),'Organiza Camadas', pai)
         self.action.setObjectName ('Organiza Camadas')
-        self.action.setStatusTip('status_tip')
-        self.action.setWhatsThis('whats_this')
-        QObject.connect (self.action, SIGNAL ("triggered ()"), self.run)
+        self.action.setStatusTip(None)
+        self.action.setWhatsThis(None)
+        QObject.connect (self.action, SIGNAL ("triggered()"), self.run)
 
         # Adicionar o botão da barra de ferramentas e item de menu 
         self.iface.addToolBarIcon (self.action) 
-        self.iface.addPluginToMenu ("&Organiza Camadas", self.action)
-
-
 
     def unload(self):
         
-        self.iface.removePluginMenu(u'&Organiza Camadas', self.action)
         self.iface.removeToolBarIcon(self.action)
-        # remove the toolbar
 
     def run(self):
         grupo = self.testGrupoAtivo()
         if(grupo):
             if(self.testMaisCamadaGrupo(grupo)):   
                 pass
-            if(self.organizaGrupo(grupo)):
+            if(self.organiza(grupo)):
                 pass
 
     def testGrupoAtivo(self):
@@ -69,7 +57,7 @@ class Suavizacao:
         else:
             pass
 
-    def organizaGrupo(self,grupo):
+    def organiza(self,grupo):
         filhos = grupo.children()
         organizado = {1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: []}
         
