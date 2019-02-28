@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/plugins/Suavizacao" >
+    <qresource prefix="/plugins/OrganizaGrupo" >
         <file>c.png</file>
     </qresource>
 </RCC>

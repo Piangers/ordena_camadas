@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-from .organizaGrupo import OrganizaGrupo
+
+
+from .OrganizaGrupo import OrganizaGrupo
 
 def classFactory(iface): 
     

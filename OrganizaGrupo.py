@@ -1,34 +1,109 @@
 # -*- coding: utf-8 -*-
 
-from qgis.core import QGis,QgsLayerTreeGroup,QgsLayerTreeLayer, QgsMapLayer
-from PyQt4.QtGui import QIcon, QAction
-from PyQt4.QtCore import QObject, SIGNAL
-import resources_rc
-from qgis.gui import QgsMessageBar
+import os
+from PyQt5.QtCore import *
+from qgis.PyQt.QtGui import *
+from qgis.PyQt.QtWidgets import *
+from qgis.gui import *
+from qgis.core import *
+from qgis.PyQt.QtWidgets import *
+from OrganizaGrupo import resources_rc
+
 
 
 class OrganizaGrupo:
 
+    
     def __init__(self, iface):
-        
+       
+        # Save reference to the QGIS interface
         self.iface = iface
+        # initialize plugin directory
+        self.plugin_dir = os.path.dirname(__file__)
+        # initialize locale
+        locale = QSettings().value('locale/userLocale')[0:2]
+        locale_path = os.path.join(
+            self.plugin_dir,
+            'i18n',
+            'BGTImport_{}.qm'.format(locale))
+
+        if os.path.exists(locale_path):
+            self.translator = QTranslator()
+            self.translator.load(locale_path)
+
+            if qVersion() > '4.3.3':
+                QCoreApplication.installTranslator(self.translator)
+
+
+        self.actions = []
+        self.menu = self.tr(u'&Batch Vector Layer Saver')
+        # TODO: We are going to let the user set this up in a future iteration
+        self.toolbar = self.iface.addToolBar(u'BatchVectorLayerSaver')
+        self.toolbar.setObjectName(u'fecha_linha')
+
+       
+    def tr(self, message):
+        
+        # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
+        return QCoreApplication.translate('BatchVectorLayerSaver', message)
+        
+    def add_action(
+        self,
+        icon_path,
+        text,
+        callback,
+        enabled_flag=True,
+        add_to_menu=True,
+        add_to_toolbar=True,
+        status_tip=None,
+        whats_this=None,
+        parent=None):
+       
+        icon = QIcon(icon_path)
+        action = QAction(icon, text, parent)
+        action.triggered.connect(callback)
+        action.setEnabled(enabled_flag)
+
+        if status_tip is not None:
+            action.setStatusTip(status_tip)
+
+        if whats_this is not None:
+            action.setWhatsThis(whats_this)
+
+        if add_to_toolbar:
+            self.toolbar.addAction(action)
+
+        if add_to_menu:
+            self.iface.addPluginToVectorMenu(
+                self.menu,
+                action)
+
+        self.actions.append(action)
+
+        return action
 
     def initGui(self):
          
-        # cria uma ação que iniciará a configuração do plugin 
-        pai = self.iface.mainWindow()
-        icon_path = ':/plugins/Suavizacao/c.png'
-        self.action = QAction (QIcon (icon_path),'Organiza Camadas', pai)
-        self.action.setObjectName ('Organiza Camadas')
-        self.action.setStatusTip(None)
-        self.action.setWhatsThis(None)
-        QObject.connect (self.action, SIGNAL ("triggered()"), self.run)
+        icon_path = ':/plugins/OrganizaGrupo/c.png'
+        self.add_action(
+            icon_path,
+            text=self.tr(u'OrganizaGrupo'),
+            callback=self.run,
+            parent=self.iface.mainWindow())    
+    
 
-        # Adicionar o botão da barra de ferramentas e item de menu 
-        self.iface.addToolBarIcon (self.action) 
+        # # Adicionar o botão da barra de ferramentas e item de menu 
+        # self.iface.addToolBarIcon (self.action) 
 
     def unload(self):
-        
+        """Removes the plugin menu item and icon from QGIS GUI."""
+        for action in self.actions:
+            self.iface.removePluginVectorMenu(
+                self.tr(u'&OrganizaGrupo'),
+                action)
+            self.iface.removeToolBarIcon(action)
+        # remove the toolbar
+        del self.toolbar  
         self.iface.removeToolBarIcon(self.action)
 
     def run(self):
@@ -67,11 +142,11 @@ class OrganizaGrupo:
                 if(layer.type() == QgsMapLayer.VectorLayer):
                     if(layer.featureCount() == 0):
                         organizado[2].append(filho)
-                    elif(layer.geometryType() == QGis.Point):
+                    elif(layer.geometryType() == 0):
                         organizado[3].append(filho)
-                    elif(layer.geometryType() == QGis.Line):
+                    elif(layer.geometryType() == 1):
                         organizado[4].append(filho)
-                    elif(layer.geometryType() == QGis.Polygon):
+                    elif(layer.geometryType() == 2):
                         organizado[5].append(filho)
                 elif(layer.type() == QgsMapLayer.RasterLayer):
                     organizado[6].append(filho)
@@ -90,7 +165,7 @@ class OrganizaGrupo:
             grupoCopia = grupoOriginal.clone()
             grupo.addChildNode(grupoCopia)
             grupo.removeChildNode(grupoOriginal)
-            self.organizaGrupo(grupoCopia)
+            #self.organizaGrupo(grupoCopia)
 
         for i in range(2,8):
             listaOrganizada = organizado[i]
